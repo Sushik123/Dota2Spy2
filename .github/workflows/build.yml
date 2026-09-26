@@ -2,7 +2,8 @@ name: Build Dota2Spy APK
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -11,200 +12,33 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
 
-      - name: Install Android SDK packages
-        run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Create Android project
-        shell: bash
-        run: |
-          rm -rf app settings.gradle.kts build.gradle.kts gradle.properties
-
-          cat > settings.gradle.kts <<'EOF'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "Dota2Spy"
-          include(":app")
-          EOF
-
-          cat > build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application") version "8.7.3" apply false
-              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-          }
-          EOF
-
-          mkdir -p app/src/main/java/com/dota2spy app/src/main/res/values
-
-          cat > app/build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application")
-              id("org.jetbrains.kotlin.android")
-          }
-
-          android {
-              namespace = "com.dota2spy"
-              compileSdk = 35
-
-              defaultConfig {
-                  applicationId = "com.dota2spy"
-                  minSdk = 23
-                  targetSdk = 35
-                  versionCode = 1
-                  versionName = "1.0"
-              }
-
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-
-              kotlinOptions {
-                  jvmTarget = "17"
-              }
-          }
-
-          dependencies {
-              implementation("androidx.core:core-ktx:1.15.0")
-              implementation("androidx.appcompat:appcompat:1.7.0")
-          }
-          EOF
-
-          cat > app/src/main/AndroidManifest.xml <<'EOF'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application
-                  android:theme="@style/AppTheme"
-                  android:label="Dota 2 Spy"
-                  android:allowBackup="false">
-                  <activity
-                      android:name=".MainActivity"
-                      android:screenOrientation="portrait"
-                      android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          EOF
-
-          cat > app/src/main/res/values/styles.xml <<'EOF'
-          <resources>
-              <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
-                  <item name="android:fontFamily">sans</item>
-                  <item name="android:colorAccent">#7C4DFF</item>
-                  <item name="android:navigationBarColor">#111111</item>
-                  <item name="android:statusBarColor">#111111</item>
-                  <item name="android:windowLightStatusBar">false</item>
-              </style>
-          </resources>
-          EOF
-
-          cat > app/src/main/java/com/dota2spy/MainActivity.kt <<'EOF'
-          package com.dota2spy
-
-          import android.app.Activity
-          import android.os.Bundle
-          import android.graphics.Color
-          import android.view.Gravity
-          import android.widget.Button
-          import android.widget.LinearLayout
-          import android.widget.TextView
-          import kotlin.random.Random
-
-          class MainActivity : Activity() {
-              private val heroes = listOf(
-                  "Abaddon", "Axe", "Bane", "Bloodseeker", "Bristleback",
-                  "Centaur Warrunner", "Crystal Maiden", "Dazzle", "Drow Ranger",
-                  "Earthshaker", "Ember Spirit", "Faceless Void", "Juggernaut",
-                  "Lina", "Lion", "Luna", "Mirana", "Morphling", "Pudge",
-                  "Queen of Pain", "Shadow Fiend", "Sniper", "Sven", "Tidehunter",
-                  "Tiny", "Ursa", "Vengeful Spirit", "Windranger", "Witch Doctor",
-                  "Zeus"
-              )
-
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-
-                  val root = LinearLayout(this).apply {
-                      orientation = LinearLayout.VERTICAL
-                      gravity = Gravity.CENTER
-                      setPadding(40, 40, 40, 40)
-                      setBackgroundColor(Color.rgb(17, 17, 17))
-                  }
-
-                  val title = TextView(this).apply {
-                      text = "DOTA 2 SPY"
-                      textSize = 30f
-                      setTextColor(Color.WHITE)
-                      gravity = Gravity.CENTER
-                  }
-
-                  val info = TextView(this).apply {
-                      text = "Игра без интернета и без рекламы"
-                      textSize = 16f
-                      setTextColor(Color.LTGRAY)
-                      gravity = Gravity.CENTER
-                  }
-
-                  val result = TextView(this).apply {
-                      text = "Нажми «Новая игра»"
-                      textSize = 24f
-                      setTextColor(Color.WHITE)
-                      gravity = Gravity.CENTER
-                      setPadding(0, 60, 0, 60)
-                  }
-
-                  val button = Button(this).apply {
-                      text = "НОВАЯ ИГРА"
-                      textSize = 18f
-                  }
-
-                  button.setOnClickListener {
-                      val hero = heroes[Random.nextInt(heroes.size)]
-                      val spy = Random.nextInt(6) + 1
-                      result.text = "Герой: $hero\n\nШпион: игрок №$spy"
-                  }
-
-                  root.addView(title)
-                  root.addView(info)
-                  root.addView(result)
-                  root.addView(button)
-                  setContentView(root)
-              }
-          }
-          EOF
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
 
       - name: Build APK
-        run: gradle --no-daemon --stacktrace assembleDebug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Find APK
+        run: |
+          echo "APK files:"
+          find . -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Dota2Spy-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Dota2Spy-debug
+          path: "**/build/outputs/apk/**/*.apk"
           if-no-files-found: error
