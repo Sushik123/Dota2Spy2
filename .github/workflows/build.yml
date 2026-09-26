@@ -9,237 +9,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Create Android project
-        run: |
-          mkdir -p app/src/main/java/com/example/dota2spy
-          mkdir -p app/src/main/res/values
+      - name: Checkout
+        uses: actions/checkout@v5
 
-          cat > settings.gradle.kts <<'EOF'
-          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories { google(); mavenCentral() }
-          }
-          rootProject.name = "Dota2Spy"
-          include(":app")
-          EOF
-
-          cat > build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application") version "8.7.3" apply false
-              kotlin("android") version "2.0.21" apply false
-          }
-          EOF
-
-          cat > gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx1536m -Dfile.encoding=UTF-8
-          android.useAndroidX=true
-          android.nonTransitiveRClass=true
-          EOF
-
-          cat > app/build.gradle.kts <<'EOF'
-          plugins {
-              id("com.android.application")
-              kotlin("android")
-          }
-          android {
-              namespace = "com.example.dota2spy"
-              compileSdk = 35
-              defaultConfig {
-                  applicationId = "com.example.dota2spy"
-                  minSdk = 23
-                  targetSdk = 35
-                  versionCode = 1
-                  versionName = "1.0"
-              }
-          }
-          EOF
-
-          cat > app/src/main/AndroidManifest.xml <<'EOF'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application android:theme="@style/AppTheme" android:label="Dota 2 Шпион" android:allowBackup="false">
-                  <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          EOF
-
-          cat > app/src/main/res/values/styles.xml <<'EOF'
-          <resources>
-              <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
-                  <item name="android:fontFamily">sans</item>
-                  <item name="android:windowLightStatusBar">false</item>
-                  <item name="android:statusBarColor">#121212</item>
-                  <item name="android:navigationBarColor">#121212</item>
-              </style>
-          </resources>
-          EOF
-
-          cat > app/src/main/java/com/example/dota2spy/MainActivity.kt <<'EOF'
-          package com.example.dota2spy
-
-          import android.app.Activity
-          import android.os.Bundle
-          import android.graphics.Color
-          import android.view.Gravity
-          import android.widget.*
-          import kotlin.random.Random
-
-          class MainActivity : Activity() {
-              private val heroes = listOf(
-                  "Abaddon","Axe","Bane","Batrider","Beastmaster","Bloodseeker","Bounty Hunter",
-                  "Brewmaster","Bristleback","Broodmother","Centaur Warrunner","Chaos Knight",
-                  "Chen","Clinkz","Clockwerk","Crystal Maiden","Dazzle","Dawnbreaker",
-                  "Death Prophet","Disruptor","Doom","Dragon Knight","Drow Ranger","Earth Spirit",
-                  "Earthshaker","Elder Titan","Ember Spirit","Enchantress","Enigma","Faceless Void",
-                  "Grimstroke","Gyrocopter","Huskar","Invoker","Jakiro","Juggernaut",
-                  "Keeper of the Light","Kez","Kunkka","Legion Commander","Leshrac","Lich",
-                  "Lifestealer","Lina","Lion","Lone Druid","Luna","Magnus","Marci","Mars",
-                  "Medusa","Meepo","Mirana","Monkey King","Morphling","Muerta","Naga Siren",
-                  "Nature's Prophet","Necrophos","Night Stalker","Nyx Assassin","Ogre Magi",
-                  "Omniknight","Oracle","Outworld Destroyer","Pangolier","Phantom Assassin",
-                  "Phantom Lancer","Phoenix","Primal Beast","Puck","Pudge","Pugna",
-                  "Queen of Pain","Razor","Riki","Rubick","Sand King","Shadow Fiend",
-                  "Shadow Shaman","Silencer","Slardar","Slark","Snapfire","Sniper","Spectre",
-                  "Spirit Breaker","Storm Spirit","Sven","Terrorblade","Tidehunter","Timbersaw",
-                  "Tinker","Tiny","Treant Protector","Troll Warlord","Tusk","Underlord","Undying",
-                  "Ursa","Vengeful Spirit","Venomancer","Viper","Visage","Void Spirit",
-                  "Warlock","Weaver","Windranger","Winter Wyvern","Witch Doctor","Wraith King","Zeus"
-              )
-
-              private lateinit var root: LinearLayout
-              private var players = 4
-              private var hero = ""
-              private var spy = 0
-              private var current = 0
-
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  showSetup()
-              }
-
-              private fun base(): LinearLayout {
-                  root = LinearLayout(this).apply {
-                      orientation = LinearLayout.VERTICAL
-                      gravity = Gravity.CENTER
-                      setPadding(40, 40, 40, 40)
-                      setBackgroundColor(Color.rgb(18,18,18))
-                  }
-                  return root
-              }
-
-              private fun title(text: String, size: Float = 28f) = TextView(this).apply {
-                  this.text = text
-                  textSize = size
-                  setTextColor(Color.WHITE)
-                  gravity = Gravity.CENTER
-                  setPadding(0,0,0,30)
-              }
-
-              private fun button(text: String, action: () -> Unit) = Button(this).apply {
-                  this.text = text
-                  setOnClickListener { action() }
-                  isAllCaps = false
-                  textSize = 18f
-              }
-
-              private fun showSetup() {
-                  val v = base()
-                  v.addView(title("🕵️ Dota 2 Шпион"))
-                  v.addView(TextView(this).apply {
-                      text = "Офлайн • без рекламы • без интернета"
-                      textSize = 16f
-                      setTextColor(Color.LTGRAY)
-                      gravity = Gravity.CENTER
-                  })
-                  val label = TextView(this).apply {
-                      text = "Количество игроков: $players"
-                      textSize = 20f
-                      setTextColor(Color.WHITE)
-                      gravity = Gravity.CENTER
-                      setPadding(0,35,0,15)
-                  }
-                  v.addView(label)
-                  v.addView(SeekBar(this).apply {
-                      min = 3
-                      max = 10
-                      progress = players - 3
-                      setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-                          override fun onProgressChanged(s: SeekBar?, p: Int, f: Boolean) {
-                              players = p + 3
-                              label.text = "Количество игроков: $players"
-                          }
-                          override fun onStartTrackingTouch(s: SeekBar?) {}
-                          override fun onStopTrackingTouch(s: SeekBar?) {}
-                      })
-                  })
-                  v.addView(button("Начать игру") { startGame() })
-                  setContentView(v)
-              }
-
-              private fun startGame() {
-                  hero = heroes.random()
-                  spy = Random.nextInt(players)
-                  current = 0
-                  showTurn()
-              }
-
-              private fun showTurn() {
-                  val v = base()
-                  v.addView(title("Игрок ${current + 1}", 32f))
-                  v.addView(title("Передай телефон этому игроку.\nНажми кнопку, когда остальные отвернутся.", 18f))
-                  v.addView(button("Показать мою роль") { reveal() })
-                  setContentView(v)
-              }
-
-              private fun reveal() {
-                  val v = base()
-                  val isSpy = current == spy
-                  v.addView(title(if (isSpy) "🕵️ ТЫ — ШПИОН!" else "🎮 ТЫ НЕ ШПИОН", 28f))
-                  v.addView(title(if (isSpy) "Попробуй понять героя, не выдав себя." else "Герой:\n$hero", 24f))
-                  v.addView(button(if (current + 1 < players) "Скрыть и передать" else "Завершить просмотр") {
-                      if (current + 1 < players) {
-                          current++
-                          showTurn()
-                      } else {
-                          showEnd()
-                      }
-                  })
-                  setContentView(v)
-              }
-
-              private fun showEnd() {
-                  val v = base()
-                  v.addView(title("Раунд готов!", 30f))
-                  v.addView(title("Герой: $hero\nШпион: игрок ${spy + 1}", 22f))
-                  v.addView(button("Новая игра") { showSetup() })
-                  setContentView(v)
-              }
-          }
-          EOF
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.9'
 
-      - name: Install SDK
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Install Gradle
+      - name: Check Android SDK
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          test -d "$ANDROID_HOME/platforms/android-35"
+          test -d "$ANDROID_HOME/build-tools/35.0.0"
 
       - name: Build APK
         run: gradle --no-daemon :app:assembleDebug
@@ -249,3 +39,4 @@ jobs:
         with:
           name: Dota2Spy-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
