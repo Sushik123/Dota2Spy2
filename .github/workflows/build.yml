@@ -2,7 +2,7 @@ name: Build Dota2Spy APK
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -10,14 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create complete Android project
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Create Android project
         shell: bash
         run: |
-          set -e
-          mkdir -p Dota2Spy/app/src/main/java/com/example/dota2spy
-          mkdir -p Dota2Spy/app/src/main/res/values
+          rm -rf app settings.gradle.kts build.gradle.kts gradle.properties
 
-          cat > Dota2Spy/settings.gradle.kts <<'EOF'
+          cat > settings.gradle.kts <<'EOF'
           pluginManagement {
               repositories {
                   google()
@@ -25,7 +39,6 @@ jobs:
                   gradlePluginPortal()
               }
           }
-
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories {
@@ -33,331 +46,165 @@ jobs:
                   mavenCentral()
               }
           }
-
           rootProject.name = "Dota2Spy"
           include(":app")
           EOF
 
-          cat > Dota2Spy/build.gradle.kts <<'EOF'
+          cat > build.gradle.kts <<'EOF'
           plugins {
               id("com.android.application") version "8.7.3" apply false
-              kotlin("android") version "2.0.21" apply false
+              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
           }
           EOF
 
-          cat > Dota2Spy/gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-          android.useAndroidX=true
-          android.nonTransitiveRClass=true
-          EOF
+          mkdir -p app/src/main/java/com/dota2spy app/src/main/res/values
 
-          cat > Dota2Spy/app/build.gradle.kts <<'EOF'
+          cat > app/build.gradle.kts <<'EOF'
           plugins {
               id("com.android.application")
-              kotlin("android")
+              id("org.jetbrains.kotlin.android")
           }
 
           android {
-              namespace = "com.example.dota2spy"
+              namespace = "com.dota2spy"
               compileSdk = 35
 
               defaultConfig {
-                  applicationId = "com.example.dota2spy"
+                  applicationId = "com.dota2spy"
                   minSdk = 23
                   targetSdk = 35
                   versionCode = 1
                   versionName = "1.0"
               }
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+
+          dependencies {
+              implementation("androidx.core:core-ktx:1.15.0")
+              implementation("androidx.appcompat:appcompat:1.7.0")
           }
           EOF
 
-          cat > Dota2Spy/app/src/main/AndroidManifest.xml <<'EOF'
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <application
-                  android:allowBackup="false"
-                  android:label="Dota 2 Шпион"
-                  android:theme="@style/AppTheme">
+                  android:theme="@style/AppTheme"
+                  android:label="Dota 2 Spy"
+                  android:allowBackup="false">
                   <activity
                       android:name=".MainActivity"
-                      android:exported="true"
-                      android:screenOrientation="portrait">
+                      android:screenOrientation="portrait"
+                      android:exported="true">
                       <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
                   </activity>
               </application>
           </manifest>
           EOF
 
-          cat > Dota2Spy/app/src/main/res/values/styles.xml <<'EOF'
+          cat > app/src/main/res/values/styles.xml <<'EOF'
           <resources>
               <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
                   <item name="android:fontFamily">sans</item>
-                  <item name="android:colorAccent">#BB86FC</item>
-                  <item name="android:statusBarColor">#121212</item>
-                  <item name="android:navigationBarColor">#121212</item>
+                  <item name="android:colorAccent">#7C4DFF</item>
+                  <item name="android:navigationBarColor">#111111</item>
+                  <item name="android:statusBarColor">#111111</item>
                   <item name="android:windowLightStatusBar">false</item>
               </style>
           </resources>
           EOF
 
-          cat > Dota2Spy/app/src/main/java/com/example/dota2spy/MainActivity.kt <<'EOF'
-          package com.example.dota2spy
+          cat > app/src/main/java/com/dota2spy/MainActivity.kt <<'EOF'
+          package com.dota2spy
 
           import android.app.Activity
-          import android.graphics.Color
           import android.os.Bundle
+          import android.graphics.Color
           import android.view.Gravity
-          import android.view.ViewGroup
           import android.widget.Button
           import android.widget.LinearLayout
-          import android.widget.SeekBar
           import android.widget.TextView
           import kotlin.random.Random
 
           class MainActivity : Activity() {
-
               private val heroes = listOf(
-                  "Abaddon", "Axe", "Bane", "Batrider", "Beastmaster",
-                  "Bloodseeker", "Bounty Hunter", "Brewmaster", "Bristleback",
-                  "Broodmother", "Centaur Warrunner", "Chaos Knight", "Chen",
-                  "Clinkz", "Clockwerk", "Crystal Maiden", "Dazzle",
-                  "Dawnbreaker", "Death Prophet", "Disruptor", "Doom",
-                  "Dragon Knight", "Drow Ranger", "Earth Spirit", "Earthshaker",
-                  "Elder Titan", "Ember Spirit", "Enchantress", "Enigma",
-                  "Faceless Void", "Grimstroke", "Gyrocopter", "Huskar",
-                  "Invoker", "Jakiro", "Juggernaut", "Keeper of the Light",
-                  "Kez", "Kunkka", "Legion Commander", "Leshrac", "Lich",
-                  "Lifestealer", "Lina", "Lion", "Lone Druid", "Luna",
-                  "Magnus", "Marci", "Mars", "Medusa", "Meepo", "Mirana",
-                  "Monkey King", "Morphling", "Muerta", "Naga Siren",
-                  "Nature's Prophet", "Necrophos", "Night Stalker",
-                  "Nyx Assassin", "Ogre Magi", "Omniknight", "Oracle",
-                  "Outworld Destroyer", "Pangolier", "Phantom Assassin",
-                  "Phantom Lancer", "Phoenix", "Primal Beast", "Puck",
-                  "Pudge", "Pugna", "Queen of Pain", "Razor", "Riki",
-                  "Rubick", "Sand King", "Shadow Fiend", "Shadow Shaman",
-                  "Silencer", "Slardar", "Slark", "Snapfire", "Sniper",
-                  "Spectre", "Spirit Breaker", "Storm Spirit", "Sven",
-                  "Terrorblade", "Tidehunter", "Timbersaw", "Tinker",
-                  "Tiny", "Treant Protector", "Troll Warlord", "Tusk",
-                  "Underlord", "Undying", "Ursa", "Vengeful Spirit",
-                  "Venomancer", "Viper", "Visage", "Void Spirit", "Warlock",
-                  "Weaver", "Windranger", "Winter Wyvern", "Witch Doctor",
-                  "Wraith King", "Zeus"
+                  "Abaddon", "Axe", "Bane", "Bloodseeker", "Bristleback",
+                  "Centaur Warrunner", "Crystal Maiden", "Dazzle", "Drow Ranger",
+                  "Earthshaker", "Ember Spirit", "Faceless Void", "Juggernaut",
+                  "Lina", "Lion", "Luna", "Mirana", "Morphling", "Pudge",
+                  "Queen of Pain", "Shadow Fiend", "Sniper", "Sven", "Tidehunter",
+                  "Tiny", "Ursa", "Vengeful Spirit", "Windranger", "Witch Doctor",
+                  "Zeus"
               )
-
-              private var playerCount = 4
-              private var currentPlayer = 0
-              private var spyPlayer = 0
-              private var selectedHero = ""
 
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-                  showSetup()
-              }
 
-              private fun screen(): LinearLayout {
-                  return LinearLayout(this).apply {
+                  val root = LinearLayout(this).apply {
                       orientation = LinearLayout.VERTICAL
                       gravity = Gravity.CENTER
-                      setPadding(36, 36, 36, 36)
-                      setBackgroundColor(Color.rgb(18, 18, 18))
+                      setPadding(40, 40, 40, 40)
+                      setBackgroundColor(Color.rgb(17, 17, 17))
                   }
-              }
 
-              private fun text(
-                  value: String,
-                  size: Float = 20f
-              ): TextView {
-                  return TextView(this).apply {
-                      text = value
-                      textSize = size
+                  val title = TextView(this).apply {
+                      text = "DOTA 2 SPY"
+                      textSize = 30f
                       setTextColor(Color.WHITE)
                       gravity = Gravity.CENTER
-                      setPadding(0, 14, 0, 14)
                   }
-              }
 
-              private fun action(
-                  value: String,
-                  callback: () -> Unit
-              ): Button {
-                  return Button(this).apply {
-                      text = value
+                  val info = TextView(this).apply {
+                      text = "Игра без интернета и без рекламы"
+                      textSize = 16f
+                      setTextColor(Color.LTGRAY)
+                      gravity = Gravity.CENTER
+                  }
+
+                  val result = TextView(this).apply {
+                      text = "Нажми «Новая игра»"
+                      textSize = 24f
+                      setTextColor(Color.WHITE)
+                      gravity = Gravity.CENTER
+                      setPadding(0, 60, 0, 60)
+                  }
+
+                  val button = Button(this).apply {
+                      text = "НОВАЯ ИГРА"
                       textSize = 18f
-                      isAllCaps = false
-                      setOnClickListener { callback() }
-                      layoutParams = LinearLayout.LayoutParams(
-                          ViewGroup.LayoutParams.MATCH_PARENT,
-                          ViewGroup.LayoutParams.WRAP_CONTENT
-                      ).apply {
-                          topMargin = 12
-                      }
-                  }
-              }
-
-              private fun showSetup() {
-                  val root = screen()
-
-                  root.addView(text("🕵️ Dota 2 Шпион", 30f))
-                  root.addView(
-                      text(
-                          "Офлайн • без рекламы • интернет не нужен",
-                          16f
-                      )
-                  )
-
-                  val countLabel = text("Игроков: $playerCount", 21f)
-                  root.addView(countLabel)
-
-                  root.addView(SeekBar(this).apply {
-                      min = 3
-                      max = 10
-                      progress = playerCount - 3
-
-                      setOnSeekBarChangeListener(
-                          object : SeekBar.OnSeekBarChangeListener {
-                              override fun onProgressChanged(
-                                  seekBar: SeekBar?,
-                                  progress: Int,
-                                  fromUser: Boolean
-                              ) {
-                                  playerCount = progress + 3
-                                  countLabel.text = "Игроков: $playerCount"
-                              }
-
-                              override fun onStartTrackingTouch(
-                                  seekBar: SeekBar?
-                              ) {}
-
-                              override fun onStopTrackingTouch(
-                                  seekBar: SeekBar?
-                              ) {}
-                          }
-                      )
-                  })
-
-                  root.addView(action("Начать игру") {
-                      startRound()
-                  })
-
-                  setContentView(root)
-              }
-
-              private fun startRound() {
-                  selectedHero = heroes.random()
-                  spyPlayer = Random.nextInt(playerCount)
-                  currentPlayer = 0
-                  showPlayerTurn()
-              }
-
-              private fun showPlayerTurn() {
-                  val root = screen()
-
-                  root.addView(
-                      text(
-                          "Игрок ${currentPlayer + 1}",
-                          32f
-                      )
-                  )
-
-                  root.addView(
-                      text(
-                          "Передай телефон этому игроку.\n" +
-                              "Остальные не должны смотреть на экран.",
-                          18f
-                      )
-                  )
-
-                  root.addView(action("Показать роль") {
-                      showRole()
-                  })
-
-                  setContentView(root)
-              }
-
-              private fun showRole() {
-                  val root = screen()
-                  val isSpy = currentPlayer == spyPlayer
-
-                  if (isSpy) {
-                      root.addView(text("🕵️ ТЫ — ШПИОН", 30f))
-                      root.addView(
-                          text(
-                              "Твоя задача — угадать героя\n" +
-                                  "и не выдать себя.",
-                              21f
-                          )
-                      )
-                  } else {
-                      root.addView(text("🎮 ТЫ НЕ ШПИОН", 28f))
-                      root.addView(
-                          text(
-                              "Герой:\n\n$selectedHero",
-                              27f
-                          )
-                      )
                   }
 
-                  val next = if (currentPlayer + 1 < playerCount) {
-                      "Скрыть и передать"
-                  } else {
-                      "Закончить просмотр"
+                  button.setOnClickListener {
+                      val hero = heroes[Random.nextInt(heroes.size)]
+                      val spy = Random.nextInt(6) + 1
+                      result.text = "Герой: $hero\n\nШпион: игрок №$spy"
                   }
 
-                  root.addView(action(next) {
-                      if (currentPlayer + 1 < playerCount) {
-                          currentPlayer++
-                          showPlayerTurn()
-                      } else {
-                          showResult()
-                      }
-                  })
-
-                  setContentView(root)
-              }
-
-              private fun showResult() {
-                  val root = screen()
-
-                  root.addView(text("Раунд готов!", 30f))
-                  root.addView(
-                      text(
-                          "Герой: $selectedHero\n\n" +
-                              "Шпион: игрок ${spyPlayer + 1}",
-                          22f
-                      )
-                  )
-
-                  root.addView(action("Новая игра") {
-                      showSetup()
-                  })
-
+                  root.addView(title)
+                  root.addView(info)
+                  root.addView(result)
+                  root.addView(button)
                   setContentView(root)
               }
           }
           EOF
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle 8.9
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: '8.9'
-
       - name: Build APK
-        working-directory: Dota2Spy
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon --stacktrace assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Dota2Spy-APK
-          path: Dota2Spy/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
