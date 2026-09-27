@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a24"/>
+      <stop offset="100%" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff5b5b"/>
+      <stop offset="100%" stop-color="#b81c1c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <path d="M 256 60
+           L 420 130
+           L 420 280
+           Q 420 400 256 460
+           Q 92 400 92 280
+           L 92 130
+           Z"
+        fill="url(#shield)"
+        stroke="#ff8c8c"
+        stroke-width="8"
+        stroke-linejoin="round"/>
+
+  <text x="256" y="330"
+        font-family="Arial Black, Arial, sans-serif"
+        font-weight="900"
+        font-size="220"
+        fill="#0d0d12"
+        text-anchor="middle">S</text>
+</svg>
