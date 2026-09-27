@@ -1,0 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: #0d0d12;
+    color: #e8e8e8;
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+    text-align: center;
+}
+
+.screen.active {
+    display: flex;
+}
+
+h1 {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #ff4b4b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 48px;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    padding: 18px;
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+.btn-main {
+    background: #1e1e2e;
+    color: #e8e8e8;
+    border: 2px solid #333;
+}
+
+.btn-back {
+    background: transparent;
+    color: #666;
+    border: 1px solid #333;
+    margin-top: 32px;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 340px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.btn-player {
+    padding: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    background: #1e1e2e;
+    color: #e8e8e8;
+    border: 2px solid #333;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.btn-player:active {
+    background: #ff4b4b;
+    border-color: #ff4b4b;
+}
+
+.role-label {
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+}
+
+.role-word {
+    font-size: 56px;
+    font-weight: 900;
+    color: #ff4b4b;
+    margin-bottom: 48px;
+    word-break: break-word;
+}
+
+.role-spy .role-word {
+    color: #ff4b4b;
+}
+
+.role-spy .role-label {
+    color: #ff4b4b;
+    font-weight: 700;
+}
+
+.pass-sub {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 48px;
+}
