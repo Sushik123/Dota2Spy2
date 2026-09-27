@@ -135,3 +135,17 @@ h2 {
     color: #888;
     margin-bottom: 48px;
 }
+.role-image {
+    max-width: 220px;
+    max-height: 220px;
+    width: auto;
+    height: auto;
+    margin: 0 auto 24px auto;
+    display: block;
+    border-radius: 8px;
+    filter: drop-shadow(0 0 20px rgba(255, 75, 75, 0.3));
+}
+
+#screen-role .btn-main {
+    margin-top: 24px;
+}
