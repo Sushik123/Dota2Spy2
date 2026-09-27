@@ -33,28 +33,42 @@ jobs:
           mkdir -p app/src/main/assets/images/heroes
           mkdir -p app/src/main/assets/images/items
 
-          # Список героев (slug = имя файла в dota2 CDN)
           HEROES="abaddon alchemist ancient_apparition antimage arc_warden axe bane batrider beastmaster bloodseeker bounty_hunter brewmaster bristleback broodmother centaur chaos_knight chen clinkz rattletrap crystal_maiden dark_seer dark_willow dawnbreaker dazzle death_prophet disruptor doom_bringer dragon_knight drow_ranger earth_spirit earthshaker elder_titan ember_spirit enchantress enigma faceless_void grimstroke gyrocopter hoodwink huskar invoker wisp jakiro juggernaut keeper_of_the_light kez kunkka legion_commander leshrac lich lifestealer lina lion lone_druid luna lycan magnataur marci mars medusa meepo mirana monkey_king morphling muerta naga_siren furion necrolyte night_stalker nyx_assassin ogre_magi omniknight oracle obsidian_destroyer pangolier phantom_assassin phantom_lancer phoenix primal_beast puck pudge pugna queenofpain razor riki ringmaster rubick sand_king shadow_demon nevermore shadow_shaman silencer skywrath_mage slardar slark snapfire sniper spectre spirit_breaker storm_spirit sven techies templar_assassin terrorblade tidehunter shredder tinker tiny treant troll_warlord tusk underlord undying ursa vengefulspirit venomancer viper visage void_spirit warlock weaver windrunner winter_wyvern witch_doctor skeleton_king zuus"
 
-          # Список предметов (slug = имя файла в dota2 CDN)
-          ITEMS="blink black_king_bar ultimate_scepter aghanims_shard rapier heart butterfly satanic skadi assault shivas_guard bloodstone octarine_core refresher_orchid scythe_of_vyse sphere lotus_orb hurricane_pike aeon_disk eternal_shroud desolator greater_crit monkey_king_bar mjollnir maelstrom battle_fury radiance silver_edge sange_and_yasha manta basher abyssal_blade diffusal_blade nullifier bloodthorn orchid force_staff glimmer_cape ghost_scepter cyclone rod_of_atos veil_of_discord dagon ethereal_blade aether_lens solar_crest medallion_of_courage spirit_vessel urn_of_shadows pipe crimson_guard guardian_greaves mekansm arcane_boots power_treads phase_boots tranquil_boots travel_boots hand_of_midas magic_stick bottle bracer null_talisman wraith_band"
+          ITEMS="blink black_king_bar ultimate_scepter aghanims_shard rapier heart butterfly satanic skadi assault shivas_guard bloodstone octarine_core refresher sheepstick sphere lotus_orb hurricane_pike aeon_disk eternal_shroud desolator greater_crit monkey_king_bar mjollnir maelstrom battle_fury radiance silver_edge sange_and_yasha manta basher abyssal_blade diffusal_blade nullifier bloodthorn orchid force_staff glimmer_cape ghost_scepter cyclone rod_of_atos veil_of_discord dagon ethereal_blade aether_lens solar_crest medallion_of_courage spirit_vessel urn_of_shadows pipe crimson_guard guardian_greaves mekansm arcane_boots power_treads phase_boots tranquil_boots travel_boots hand_of_midas magic_stick bottle bracer null_talisman wraith_band"
 
-          # Скачиваем героев
           for hero in $HEROES; do
             curl -s -L -o "app/src/main/assets/images/heroes/${hero}.png" \
               "https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${hero}.png" || true
           done
 
-          # Скачиваем предметы
           for item in $ITEMS; do
             curl -s -L -o "app/src/main/assets/images/items/${item}.png" \
               "https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/${item}.png" || true
           done
 
-          echo "Downloaded heroes:"
-          ls app/src/main/assets/images/heroes/ | head -5
-          echo "Downloaded items:"
-          ls app/src/main/assets/images/items/ | head -5
+          echo "Heroes downloaded: $(ls app/src/main/assets/images/heroes/ | wc -l)"
+          echo "Items downloaded: $(ls app/src/main/assets/images/items/ | wc -l)"
+
+      - name: Generate app icons
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin imagemagick
+
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+
+          rsvg-convert -w 48 -h 48 icon.svg -o app/src/main/res/mipmap-mdpi/ic_launcher.png
+          rsvg-convert -w 72 -h 72 icon.svg -o app/src/main/res/mipmap-hdpi/ic_launcher.png
+          rsvg-convert -w 96 -h 96 icon.svg -o app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          rsvg-convert -w 144 -h 144 icon.svg -o app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          rsvg-convert -w 192 -h 192 icon.svg -o app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+          echo "Icons generated:"
+          find app/src/main/res -name "*.png" -exec ls -la {} \;
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
