@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dota2Spy</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="screen-menu" class="screen active">
+        <h1>DOTA2SPY</h1>
+        <p class="subtitle">Шпион по Dota 2</p>
+        <button class="btn btn-main" onclick="startGame('heroes')">🎮 ГЕРОИ</button>
+        <button class="btn btn-main" onclick="startGame('items')">⚔️ ПРЕДМЕТЫ</button>
+    </div>
+
+    <div id="screen-players" class="screen">
+        <h2>Сколько игроков?</h2>
+        <div class="players-grid" id="players-grid"></div>
+        <button class="btn btn-back" onclick="showScreen('screen-menu')">← Назад</button>
+    </div>
+
+    <div id="screen-pass" class="screen">
+        <h2 id="pass-title">Игрок 1</h2>
+        <p class="pass-sub" id="pass-sub">Возьми телефон и нажми кнопку</p>
+        <button class="btn btn-main" onclick="revealRole()">ПОКАЗАТЬ МОЮ РОЛЬ</button>
+    </div>
+
+    <div id="screen-role" class="screen">
+        <div id="role-content">
+            <p class="role-label">ТВОЯ РОЛЬ</p>
+            <h2 class="role-word" id="role-word">Pudge</h2>
+        </div>
+        <button class="btn btn-main" onclick="hideAndPass()">СКРЫТЬ И ПЕРЕДАТЬ</button>
+    </div>
+
+    <div id="screen-done" class="screen">
+        <h1>ВСЁ РАЗДАНО</h1>
+        <p class="subtitle">Обсуждайте, кто шпион!</p>
+        <button class="btn btn-main" onclick="showScreen('screen-menu')">НОВАЯ ИГРА</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
